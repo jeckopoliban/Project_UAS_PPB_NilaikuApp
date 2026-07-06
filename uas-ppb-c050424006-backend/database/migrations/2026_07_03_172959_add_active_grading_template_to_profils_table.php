@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('profils', function (Blueprint $table) {
+            if (! Schema::hasColumn('profils', 'active_grading_template_id')) {
+                $table->foreignId('active_grading_template_id')
+                    ->nullable()
+                    ->after('program_studi')
+                    ->constrained('grading_templates')
+                    ->nullOnDelete();
+            }
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('profils', function (Blueprint $table) {
+            if (Schema::hasColumn('profils', 'active_grading_template_id')) {
+                $table->dropForeign(['active_grading_template_id']);
+                $table->dropColumn('active_grading_template_id');
+            }
+        });
+    }
+};

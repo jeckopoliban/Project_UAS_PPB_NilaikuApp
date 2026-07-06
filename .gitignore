@@ -1,0 +1,18 @@
+# Root helper scripts
+/temp_*.php
+/test_check.php
+
+# Optional local editor settings
+/.vscode/
+
+# Backend local/debug artifacts
+/uas-ppb-c050424006-backend/login_cookie.txt
+/uas-ppb-c050424006-backend/login_headers.txt
+/uas-ppb-c050424006-backend/login_page.html
+/uas-ppb-c050424006-backend/login_response.html
+/uas-ppb-c050424006-backend/login-payload.json
+/uas-ppb-c050424006-backend/noor-login.json
+/uas-ppb-c050424006-backend/response_body_1.txt
+/uas-ppb-c050424006-backend/response_headers.txt
+/uas-ppb-c050424006-backend/admin-button-scan.txt
+/uas-ppb-c050424006-backend/.rnd

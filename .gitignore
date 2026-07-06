@@ -5,6 +5,23 @@
 # Optional local editor settings
 /.vscode/
 
+# OS/editor noise
+/.DS_Store
+/Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.temp
+
+# Monorepo generated/cached files
+/nilaiku_mobile_app/.dart_tool/
+/nilaiku_mobile_app/build/
+/nilaiku_mobile_app/.idea/
+/uas-ppb-c050424006-backend/vendor/
+/uas-ppb-c050424006-backend/node_modules/
+/uas-ppb-c050424006-backend/storage/logs/*.log
+/uas-ppb-c050424006-backend/.env
+
 # Backend local/debug artifacts
 /uas-ppb-c050424006-backend/temp_*.php
 /uas-ppb-c050424006-backend/login_cookie.txt

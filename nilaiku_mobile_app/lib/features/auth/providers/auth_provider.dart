@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../../grading/providers/grading_provider.dart';
 import '../../mata_kuliah/providers/mata_kuliah_provider.dart';
 import '../../nilai/providers/nilai_provider.dart';
 import '../../nilai_saya/providers/nilai_saya_provider.dart';
+import '../../profile/providers/profile_provider.dart';
+import '../../rekapitulasi/providers/rekapitulasi_provider.dart';
 import '../../semester/providers/semester_provider.dart';
 import '../data/auth_repository.dart';
 
@@ -104,6 +107,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       final data = result['data'] as Map<String, dynamic>;
       final user = data['user'] as Map<String, dynamic>;
 
+      await _invalidateUserScopedProviders();
+
       state = AsyncValue.data(
         AuthState(
           isLoggedIn: true,
@@ -112,6 +117,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
           userRole: user['role'] ?? 'mahasiswa',
         ),
       );
+      _lastLoginAt = DateTime.now();
       return true;
     }
 
@@ -155,23 +161,23 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
 
     await _authRepository.logout();
-    ref.invalidate(semesterProvider);
-    ref.invalidate(mataKuliahProvider);
-    ref.invalidate(nilaiSayaProvider);
-    ref.invalidate(nilaiProvider);
-    ref.invalidate(gradingProvider);
+    await _invalidateUserScopedProviders();
     if (kDebugMode) {
       print('AuthNotifier.logout finished and academic providers invalidated');
     }
     state = AsyncValue.data(AuthState.initial());
   }
 
-  Future<void> _invalidateAcademicProviders() async {
+  Future<void> _invalidateUserScopedProviders() async {
+    ref.invalidate(dashboardProvider);
     ref.invalidate(semesterProvider);
     ref.invalidate(mataKuliahProvider);
     ref.invalidate(nilaiSayaProvider);
     ref.invalidate(nilaiProvider);
     ref.invalidate(gradingProvider);
+    ref.invalidate(profileProvider);
+    ref.invalidate(rekapitulasiProvider);
+    ref.invalidate(ipIpkProvider);
   }
 
   Future<bool> login({required String email, required String password}) async {
@@ -186,7 +192,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         final data = result['data'] as Map<String, dynamic>;
         final user = data['user'] as Map<String, dynamic>;
 
-        await _invalidateAcademicProviders();
+        await _invalidateUserScopedProviders();
 
         state = AsyncValue.data(
           AuthState(

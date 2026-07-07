@@ -85,7 +85,11 @@ class TahunAkademikController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $item->fill($validator->validated());
+        $validated = $validator->validated();
+
+        $item->nama = $validated['nama'];
+        // Checkbox unchecked does not send value; treat as false explicitly.
+        $item->status_aktif = $request->boolean('status_aktif');
         $item->save();
 
         AktivitasLog::create([

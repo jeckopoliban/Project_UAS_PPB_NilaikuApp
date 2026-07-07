@@ -92,7 +92,7 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-text-heading">Pertumbuhan User</h3>
-                <p class="text-sm text-text-body">Jumlah user baru per bulan selama 6 bulan terakhir.</p>
+                <p class="text-sm text-text-body">Jumlah user baru per bulan.</p>
             </div>
             <span class="inline-flex rounded-app-pill bg-brand-blue-light/15 px-3 py-1 text-xs font-semibold text-brand-blue">Chart</span>
         </div>

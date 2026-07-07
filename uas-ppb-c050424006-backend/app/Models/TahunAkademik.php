@@ -28,6 +28,23 @@ class TahunAkademik extends Model
         'status_aktif' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (TahunAkademik $tahunAkademik): void {
+            if (! $tahunAkademik->status_aktif) {
+                return;
+            }
+
+            // Keep exactly one active semester per mahasiswa when a semester
+            // is marked active. If all are set inactive, it remains valid.
+            self::query()
+                ->where('mahasiswa_id', $tahunAkademik->mahasiswa_id)
+                ->where('id', '!=', $tahunAkademik->id)
+                ->where('status_aktif', true)
+                ->update(['status_aktif' => false]);
+        });
+    }
+
     public function mahasiswa(): BelongsTo
     {
         return $this->belongsTo(User::class, 'mahasiswa_id');

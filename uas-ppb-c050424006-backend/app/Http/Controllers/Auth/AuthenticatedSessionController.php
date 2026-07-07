@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +29,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        app(AuditLogService::class)->record(
+            $request,
+            'login',
+            'Login berhasil: ' . $request->user()?->name,
+            $request->user()?->id,
+        );
+
         // Redirect to the central `dashboard` route which forwards to the
         // appropriate admin or portal dashboard based on user role.
         return redirect()->route('dashboard');
@@ -38,6 +46,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $currentUser = $request->user();
+
+        app(AuditLogService::class)->record(
+            $request,
+            'logout',
+            'Logout: ' . ($currentUser?->name ?? '-'),
+            $currentUser?->id,
+        );
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

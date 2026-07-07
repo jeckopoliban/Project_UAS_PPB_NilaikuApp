@@ -40,7 +40,7 @@ class ProfileUpdateRequest extends FormRequest
             'jenis_institusi' => ['nullable', 'string', 'in:perguruan_tinggi,sekolah'],
             'program_studi' => ['nullable', 'string', 'max:255'],
             'target_ipk' => ['nullable', 'numeric', 'between:0,4.00'],
-            'target_sks' => ['nullable', 'integer', 'between:1,200'],
+            'target_sks' => ['nullable', 'integer', 'between:0,200'],
             'foto_profil' => ['nullable', 'image', 'max:2048'],
         ];
     }

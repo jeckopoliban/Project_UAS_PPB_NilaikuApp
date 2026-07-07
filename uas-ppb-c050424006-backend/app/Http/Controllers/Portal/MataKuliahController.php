@@ -7,6 +7,7 @@ use App\Models\AktivitasLog;
 use App\Models\MataKuliah;
 use App\Models\TahunAkademik;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -89,6 +90,12 @@ class MataKuliahController extends Controller
             'deskripsi' => $item->nama_mk,
         ]);
 
+        app(AuditLogService::class)->record(
+            $request,
+            'create_mata_kuliah',
+            'Menambahkan mata kuliah: ' . $item->nama_mk,
+        );
+
         return redirect()->route('portal.mata-kuliah.index')->with('success', 'Mata kuliah berhasil dibuat');
     }
 
@@ -139,6 +146,12 @@ class MataKuliahController extends Controller
             'deskripsi' => $item->nama_mk,
         ]);
 
+        app(AuditLogService::class)->record(
+            $request,
+            'update_mata_kuliah',
+            'Memperbarui mata kuliah: ' . $item->nama_mk,
+        );
+
         return redirect()->route('portal.mata-kuliah.index')->with('success', 'Mata kuliah berhasil diperbarui');
     }
 
@@ -158,6 +171,12 @@ class MataKuliahController extends Controller
             'aksi' => 'Menghapus Mata Kuliah',
             'deskripsi' => $name,
         ]);
+
+        app(AuditLogService::class)->record(
+            request(),
+            'delete_mata_kuliah',
+            'Menghapus mata kuliah: ' . $name,
+        );
 
         return redirect()->route('portal.mata-kuliah.index')->with('success', 'Mata kuliah berhasil dihapus');
     }

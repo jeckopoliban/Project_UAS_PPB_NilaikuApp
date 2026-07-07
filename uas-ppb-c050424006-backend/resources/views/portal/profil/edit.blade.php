@@ -17,7 +17,8 @@
             </div>
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2" for="email">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" class="w-full rounded-app-pill border border-border-subtle bg-slate-50 px-4 py-3 text-slate-900 focus:border-brand-blue focus:ring-brand-blue/50 focus:outline-none" required>
+                <input id="email" name="email" type="email" value="{{ $user->email }}" class="w-full rounded-app-pill border border-border-subtle bg-slate-100 px-4 py-3 text-slate-600 focus:outline-none" readonly>
+                <p class="mt-2 text-xs text-slate-500">Email adalah kredensial akun dan tidak dapat diubah dari profil mahasiswa.</p>
                 @error('email')<p class="text-rose-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
             <div>
@@ -51,7 +52,7 @@
             </div>
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2" for="target_sks">Target SKS</label>
-                <input id="target_sks" name="target_sks" type="number" min="1" max="200" value="{{ old('target_sks', $user->profil?->target_sks ?? 144) }}" class="w-full rounded-app-pill border border-border-subtle bg-slate-50 px-4 py-3 text-slate-900 focus:border-brand-blue focus:ring-brand-blue/50 focus:outline-none">
+                <input id="target_sks" name="target_sks" type="number" min="0" max="200" value="{{ old('target_sks', $user->profil?->target_sks ?? 0) }}" class="w-full rounded-app-pill border border-border-subtle bg-slate-50 px-4 py-3 text-slate-900 focus:border-brand-blue focus:ring-brand-blue/50 focus:outline-none">
                 @error('target_sks')<p class="text-rose-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
             <div class="md:col-span-2">

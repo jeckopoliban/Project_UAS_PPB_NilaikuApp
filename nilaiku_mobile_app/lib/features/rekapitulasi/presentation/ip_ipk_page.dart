@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/buttons.dart';
@@ -98,7 +99,19 @@ class _IpIpkPageState extends ConsumerState<IpIpkPage> {
     final ipIpkState = ref.watch(ipIpkProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('IP / IPK'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('IP / IPK'),
+        centerTitle: true,
+        leading: IconButton(
+          tooltip: 'Kembali',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            if (!await Navigator.of(context).maybePop() && context.mounted) {
+              context.go('/dashboard');
+            }
+          },
+        ),
+      ),
       body: ipIpkState.when(
         data: (data) {
           if (data.isEmpty) {

@@ -101,7 +101,7 @@
         </div>
         <div id="user-growth-data" class="hidden">
             @forelse ($userGrowth as $item)
-                <span data-growth-month="{{ $item->month }}" data-growth-count="{{ $item->count }}"></span>
+                <span data-growth-month="{{ data_get($item, 'month') }}" data-growth-count="{{ data_get($item, 'count') }}"></span>
             @empty
                 <span data-growth-month="Jan" data-growth-count="0"></span>
                 <span data-growth-month="Feb" data-growth-count="0"></span>

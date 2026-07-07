@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/buttons.dart';
@@ -472,7 +473,19 @@ class _GradingListPageState extends ConsumerState<GradingListPage> {
     final gradingState = ref.watch(gradingProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Grading'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Grading'),
+        centerTitle: true,
+        leading: IconButton(
+          tooltip: 'Kembali',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            if (!await Navigator.of(context).maybePop() && context.mounted) {
+              context.go('/dashboard');
+            }
+          },
+        ),
+      ),
       body: gradingState.when(
         data: (items) {
           if (items.isEmpty) {

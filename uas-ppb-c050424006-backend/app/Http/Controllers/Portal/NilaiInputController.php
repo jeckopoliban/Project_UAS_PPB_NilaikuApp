@@ -7,6 +7,7 @@ use App\Models\AktivitasLog;
 use App\Models\KomponenNilai;
 use App\Models\MataKuliah;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,12 @@ class NilaiInputController extends Controller
             ]);
         }
 
+        app(AuditLogService::class)->record(
+            $request,
+            'apply_template_komponen_mahasiswa',
+            'Menerapkan template komponen ke mata kuliah: ' . $mataKuliah->nama_mk,
+        );
+
         return redirect()->route('portal.nilai-saya', ['tahun_akademik_id' => $mataKuliah->tahun_akademik_id])->with('success', 'Template komponen nilai berhasil diterapkan.');
     }
 
@@ -101,6 +108,12 @@ class NilaiInputController extends Controller
             ->firstOrFail();
 
         $item->delete();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'delete_komponen_nilai_mahasiswa',
+            'Menghapus komponen nilai pada mata kuliah: ' . $mataKuliah->nama_mk,
+        );
 
         return redirect()->route('portal.nilai-saya', ['tahun_akademik_id' => $mataKuliah->tahun_akademik_id])->with('success', 'Komponen nilai berhasil dihapus.');
     }
@@ -177,6 +190,13 @@ class NilaiInputController extends Controller
                 'aksi' => 'Memperbarui Komponen Nilai',
                 'deskripsi' => 'Mata kuliah: ' . $mataKuliah->nama_mk,
             ]);
+
+            app(AuditLogService::class)->record(
+                request(),
+                'update_komponen_nilai_mahasiswa',
+                'Memperbarui komponen nilai: ' . $mataKuliah->nama_mk,
+                $currentUserId,
+            );
         });
 
         return redirect()->route('portal.nilai-saya', ['tahun_akademik_id' => $mataKuliah->tahun_akademik_id])->with('success', 'Komponen nilai berhasil disimpan.');

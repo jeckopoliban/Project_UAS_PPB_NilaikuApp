@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/buttons.dart';
@@ -111,7 +112,19 @@ class SemesterListPage extends ConsumerWidget {
     final semesterState = ref.watch(semesterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Semester'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Semester'),
+        centerTitle: true,
+        leading: IconButton(
+          tooltip: 'Kembali',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            if (!await Navigator.of(context).maybePop() && context.mounted) {
+              context.go('/dashboard');
+            }
+          },
+        ),
+      ),
       body: semesterState.when(
         data: (items) {
           if (items.isEmpty) {

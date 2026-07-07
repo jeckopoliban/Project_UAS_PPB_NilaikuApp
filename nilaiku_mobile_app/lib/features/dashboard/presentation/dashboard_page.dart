@@ -77,7 +77,7 @@ class DashboardPage extends ConsumerWidget {
               : 0.0;
           final progressBadge = targetSks > 0
               ? '${(progressRatio * 100).round()}%'
-              : '-';
+              : '0%';
 
           final ipTrendRaw = data['ip_trend'] as List<dynamic>? ?? [];
           final ipTrend = ipTrendRaw.whereType<Map<String, dynamic>>().toList();

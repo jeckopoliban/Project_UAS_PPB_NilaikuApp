@@ -8,6 +8,7 @@ use App\Models\KomponenNilai;
 use App\Models\MataKuliah;
 use App\Models\TahunAkademik;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -27,6 +28,12 @@ class UserManagementController extends Controller
         $user = User::findOrFail($id);
         $user->status_aktif = ! $user->status_aktif;
         $user->save();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'toggle_active_user',
+            ($user->status_aktif ? 'Mengaktifkan' : 'Menonaktifkan') . " user: {$user->id} ({$user->name})",
+        );
 
         $message = $user->status_aktif ? 'Akun diaktifkan' : 'Akun dinonaktifkan';
 
@@ -69,13 +76,12 @@ class UserManagementController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        AuditLog::create([
-            'user_id' => $currentUser?->id,
-            'aksi' => 'hapus_user',
-            'deskripsi' => "Menghapus user: {$user->name} ({$user->email})",
-            'ip_address' => request()->ip(),
-            'created_at' => now(),
-        ]);
+        app(AuditLogService::class)->record(
+            $request,
+            'hapus_user',
+            "Menghapus user: {$user->name} ({$user->email})",
+            $currentUser?->id,
+        );
 
         return redirect()->route('admin.user-management.index')->with('success', 'User berhasil dihapus');
     }
@@ -92,13 +98,12 @@ class UserManagementController extends Controller
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
 
-        AuditLog::create([
-            'user_id' => $request->user()?->id,
-            'aksi' => 'pulihkan_user',
-            'deskripsi' => "Memulihkan user: {$user->name} ({$user->email})",
-            'ip_address' => request()->ip(),
-            'created_at' => now(),
-        ]);
+        app(AuditLogService::class)->record(
+            $request,
+            'pulihkan_user',
+            "Memulihkan user: {$user->name} ({$user->email})",
+            $request->user()?->id,
+        );
 
         return redirect()->route('admin.users.trashed')->with('success', 'User berhasil dipulihkan');
     }
@@ -124,13 +129,12 @@ class UserManagementController extends Controller
 
         $user->forceDelete();
 
-        AuditLog::create([
-            'user_id' => $request->user()?->id,
-            'aksi' => 'hapus_permanen_user',
-            'deskripsi' => "Menghapus permanen user: {$user->name} ({$user->email})",
-            'ip_address' => request()->ip(),
-            'created_at' => now(),
-        ]);
+        app(AuditLogService::class)->record(
+            $request,
+            'hapus_permanen_user',
+            "Menghapus permanen user: {$user->name} ({$user->email})",
+            $request->user()?->id,
+        );
 
         return redirect()->route('admin.users.trashed')->with('success', 'User berhasil dihapus permanen');
     }

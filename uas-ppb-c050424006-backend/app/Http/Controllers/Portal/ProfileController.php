@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\AktivitasLog;
 use App\Models\Profil;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -37,20 +38,30 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
         /** @var User $user */
         $user = Auth::user();
-        $validated = $request->validated();
-
-        $user->fill([ 
-            'name' => $validated['name'], 
-            'email' => $validated['email'],
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'nim_nis' => ['nullable', 'string', 'max:255'],
+            'no_hp' => ['nullable', 'string', 'max:255'],
+            'nama_institusi' => ['nullable', 'string', 'max:255'],
+            'jenis_institusi' => ['nullable', 'string', 'in:perguruan_tinggi,sekolah'],
+            'program_studi' => ['nullable', 'string', 'max:255'],
+            'target_sks' => ['nullable', 'integer', 'between:0,200'],
+            'foto_profil' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
         }
+
+        $validated = $validator->validated();
+
+        $user->fill([
+            'name' => $validated['name'],
+        ]);
 
         $user->save();
 
@@ -74,6 +85,13 @@ class ProfileController extends Controller
         Profil::updateOrCreate(
             ['user_id' => $user->id],
             $profileData
+        );
+
+        app(AuditLogService::class)->record(
+            $request,
+            'update_profil_mahasiswa',
+            'Memperbarui profil mahasiswa: ' . $user->name,
+            $user->id,
         );
 
         AktivitasLog::create([

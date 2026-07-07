@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
-use Illuminate\Artisan;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 
 class SystemController extends Controller
@@ -45,6 +46,12 @@ class SystemController extends Controller
             Artisan::call('down');
             $message = 'Aplikasi sedang dalam maintenance';
         }
+
+        app(AuditLogService::class)->record(
+            request(),
+            'toggle_maintenance',
+            $message,
+        );
 
         return redirect()->back()->with('success', $message);
     }

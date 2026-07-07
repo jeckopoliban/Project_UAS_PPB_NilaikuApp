@@ -176,7 +176,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     required Map<String, dynamic> user,
     required Map<String, dynamic> profil,
     String? name,
-    String? email,
     String? nimNis,
     String? noHp,
     String? namaInstitusi,
@@ -189,7 +188,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         .read(profileProvider.notifier)
         .updateProfile(
           name: name ?? user['name']?.toString() ?? '',
-          email: email ?? user['email']?.toString() ?? '',
           nimNis: nimNis ?? profil['nim_nis']?.toString(),
           noHp: noHp ?? profil['no_hp']?.toString(),
           namaInstitusi:
@@ -245,34 +243,25 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     await onSave(controller.text.trim());
   }
 
-  Future<void> _editNamaEmail(
+  Future<void> _editNama(
     Map<String, dynamic> user,
     Map<String, dynamic> profil,
   ) async {
     final nameController = TextEditingController(
       text: user['name']?.toString() ?? '',
     );
-    final emailController = TextEditingController(
-      text: user['email']?.toString() ?? '',
-    );
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Ubah Nama & Email'),
+          title: const Text('Ubah Nama'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Nama'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
               ),
             ],
           ),
@@ -297,8 +286,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       user: user,
       profil: profil,
       name: nameController.text.trim(),
-      email: emailController.text.trim().toLowerCase(),
-      successMessage: 'Nama dan email berhasil diperbarui.',
+      successMessage: 'Nama berhasil diperbarui.',
     );
   }
 
@@ -596,7 +584,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               ),
                               const SizedBox(width: 14),
                               _ProfileEditButton(
-                                onPressed: () => _editNamaEmail(user, profil),
+                                onPressed: () => _editNama(user, profil),
                               ),
                             ],
                           ),

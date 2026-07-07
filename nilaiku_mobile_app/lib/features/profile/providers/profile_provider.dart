@@ -31,7 +31,6 @@ class ProfileNotifier extends AsyncNotifier<Map<String, dynamic>> {
 
   Future<bool> updateProfile({
     String? name,
-    String? email,
     String? nimNis,
     String? noHp,
     required String namaInstitusi,
@@ -44,7 +43,6 @@ class ProfileNotifier extends AsyncNotifier<Map<String, dynamic>> {
     try {
       await _repository.updateProfile(
         name: name,
-        email: email,
         nimNis: nimNis,
         noHp: noHp,
         namaInstitusi: namaInstitusi,

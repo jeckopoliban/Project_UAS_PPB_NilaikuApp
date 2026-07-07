@@ -21,7 +21,6 @@ class ProfileRepository {
 
   Future<Map<String, dynamic>> updateProfile({
     String? name,
-    String? email,
     String? nimNis,
     String? noHp,
     required String namaInstitusi,
@@ -37,9 +36,6 @@ class ProfileRepository {
 
     if (name != null) {
       payload['name'] = name;
-    }
-    if (email != null) {
-      payload['email'] = email;
     }
     if (nimNis != null) {
       payload['nim_nis'] = nimNis;

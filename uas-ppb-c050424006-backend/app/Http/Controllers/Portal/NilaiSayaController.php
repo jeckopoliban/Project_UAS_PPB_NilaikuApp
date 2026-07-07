@@ -32,6 +32,9 @@ class NilaiSayaController extends Controller
 
         $rows = $mataKuliahs->map(function (MataKuliah $mataKuliah) use ($gradingService, $mahasiswaId) {
             $totalBobot = $mataKuliah->komponenNilais->sum('bobot_persen');
+            $adaNilaiKosong = $mataKuliah->komponenNilais->contains(function ($komponen) {
+                return $komponen->nilai_angka === null;
+            });
             $semesterName = $mataKuliah->tahunAkademik?->nama ?? '-';
             $komponenName = $mataKuliah->nama_komponen_penilaian ?: '-';
             $nilai = '-';
@@ -42,9 +45,9 @@ class NilaiSayaController extends Controller
             if ($mataKuliah->komponenNilais->isEmpty()) {
                 $nilai = '-';
                 $status = 'Belum Ada Komponen';
-            } elseif ($totalBobot < 100) {
+            } elseif ($totalBobot < 100 || $adaNilaiKosong) {
                 $nilai = 'Belum Lengkap';
-                $status = 'Belum Lengkap';
+                $status = 'Pending';
             } else {
                 $nilaiAkhir = $gradingService->hitungNilaiAkhir($mataKuliah->id, $mahasiswaId);
 
@@ -55,7 +58,7 @@ class NilaiSayaController extends Controller
                     $status = 'Selesai';
                 } else {
                     $nilai = 'Belum Lengkap';
-                    $status = 'Belum Lengkap';
+                    $status = 'Pending';
                 }
             }
 

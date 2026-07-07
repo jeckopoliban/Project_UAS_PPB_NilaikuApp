@@ -94,8 +94,7 @@ class _NilaiSayaListPageState extends ConsumerState<NilaiSayaListPage> {
                         (item['status'] as String? ?? 'Belum Ada Komponen')
                             .toLowerCase();
                     final isComplete =
-                        status.contains('selesai') ||
-                        status.contains('lengkap');
+                        status == 'selesai' || status == 'lengkap';
                     final hasAnyComponent =
                         (item['nama_komponen_penilaian'] as String?)
                             ?.isNotEmpty ==

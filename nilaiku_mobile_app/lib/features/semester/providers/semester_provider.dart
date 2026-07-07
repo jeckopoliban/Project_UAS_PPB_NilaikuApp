@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/providers/auth_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../data/semester_repository.dart';
 
 final semesterRepositoryProvider = Provider<SemesterRepository>((ref) {
@@ -34,6 +35,7 @@ class SemesterNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
       statusAktif: statusAktif,
     );
     await refresh();
+    ref.invalidate(dashboardProvider);
   }
 
   Future<void> updateSemester(int id, String nama, bool statusAktif) async {
@@ -43,10 +45,12 @@ class SemesterNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
       statusAktif: statusAktif,
     );
     await refresh();
+    ref.invalidate(dashboardProvider);
   }
 
   Future<void> deleteSemester(int id) async {
     await _semesterRepository.deleteSemester(id);
     await refresh();
+    ref.invalidate(dashboardProvider);
   }
 }

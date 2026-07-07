@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,13 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        app(AuditLogService::class)->record(
+            $request,
+            'register_user',
+            "Mendaftar akun baru: {$user->id} ({$user->name})",
+            $user->id,
+        );
 
         Auth::login($user);
 

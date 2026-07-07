@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KomponenNilai;
 use App\Models\MataKuliah;
 use App\Models\TahunAkademik;
+use App\Services\AuditLogService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,6 +93,13 @@ class MataKuliahController extends Controller
             'nama_mk' => $request->input('nama_mk'),
             'sks' => $request->input('sks'),
         ]);
+
+        app(AuditLogService::class)->record(
+            $request,
+            'api_create_mata_kuliah',
+            'Menambahkan mata kuliah via API: ' . $item->nama_mk,
+            $userId,
+        );
 
         return response()->json([
             'success' => true,
@@ -209,6 +217,13 @@ class MataKuliahController extends Controller
             }
         });
 
+        app(AuditLogService::class)->record(
+            $request,
+            'api_update_mata_kuliah',
+            'Memperbarui mata kuliah via API: ' . $item->nama_mk,
+            $userId,
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Mata kuliah berhasil diperbarui',
@@ -231,6 +246,13 @@ class MataKuliahController extends Controller
             ], 404);
         }
         $item->delete();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'api_delete_mata_kuliah',
+            'Menghapus mata kuliah via API: ' . $item->nama_mk,
+            $userId,
+        );
 
         return response()->json([
             'success' => true,

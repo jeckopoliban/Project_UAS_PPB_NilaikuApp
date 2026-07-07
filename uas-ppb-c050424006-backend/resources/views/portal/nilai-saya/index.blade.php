@@ -45,13 +45,26 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @foreach($mataKuliahs as $mataKuliah)
+                        @php
+                            $statusText = $mataKuliah['status'] ?? '-';
+                            $statusClass = match ($statusText) {
+                                'Selesai' => 'bg-emerald-100 text-emerald-700',
+                                'Belum Ada Komponen' => '',
+                                'Pending', 'Belum Lengkap' => 'bg-amber-100 text-amber-700',
+                                default => 'bg-slate-100 text-slate-700',
+                            };
+                        @endphp
                         <tr>
                             <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-900">{{ $mataKuliah['nama_mk'] }}</td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-600">{{ $mataKuliah['semester'] }}</td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-600">{{ $mataKuliah['sks'] }}</td>
                             <td class="px-4 py-4 text-slate-600">{{ $mataKuliah['komponen_penilaian'] }}</td>
                             <td class="px-4 py-4">
-                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $mataKuliah['status'] === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">{{ $mataKuliah['status'] }}</span>
+                                @if ($statusText === 'Belum Ada Komponen')
+                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold" style="background-color:#FFEDD5;color:#C2410C;">{{ $statusText }}</span>
+                                @else
+                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">{{ $statusText }}</span>
+                                @endif
                             </td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-900">{{ $mataKuliah['nilai'] }}</td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-900">{{ $mataKuliah['grade'] }}</td>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GradingTemplate;
 use App\Models\GradingTemplateItem;
 use App\Models\TahunAkademik;
+use App\Services\AuditLogService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +73,13 @@ class GradingTemplateController extends Controller
 
                 return $template->load('items');
             });
+
+            app(AuditLogService::class)->record(
+                $request,
+                'api_create_grading_template',
+                'Membuat template penilaian via API: ' . $template->nama_template,
+                (int) ($request->user()?->id ?? 0),
+            );
 
             return response()->json([
                 'success' => true,
@@ -166,6 +174,13 @@ class GradingTemplateController extends Controller
                 return $template->load('items');
             });
 
+            app(AuditLogService::class)->record(
+                $request,
+                'api_update_grading_template',
+                'Memperbarui template penilaian via API: ' . $template->nama_template,
+                (int) ($request->user()?->id ?? 0),
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => 'Template penilaian berhasil diperbarui',
@@ -180,7 +195,7 @@ class GradingTemplateController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
             $template = GradingTemplate::findOrFail($id);
@@ -195,6 +210,13 @@ class GradingTemplateController extends Controller
         try {
             $template->items()->delete();
             $template->delete();
+
+            app(AuditLogService::class)->record(
+                $request,
+                'api_delete_grading_template',
+                'Menghapus template penilaian via API: ' . $template->nama_template,
+                (int) ($request->user()?->id ?? 0),
+            );
 
             return response()->json([
                 'success' => true,
@@ -250,6 +272,13 @@ class GradingTemplateController extends Controller
                     ->whereIn('id', $tahunAkademikIds)
                     ->update(['grading_template_id' => $template->id]);
             }
+
+            app(AuditLogService::class)->record(
+                $request,
+                'api_apply_grading_template',
+                'Menerapkan template penilaian via API: ' . $template->nama_template,
+                $userId,
+            );
 
             return response()->json([
                 'success' => true,

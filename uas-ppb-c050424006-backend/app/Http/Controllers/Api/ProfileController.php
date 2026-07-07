@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Profil;
+use App\Services\AuditLogService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -35,22 +35,13 @@ class ProfileController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => [
-                'sometimes',
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id),
-            ],
             'nim_nis' => ['nullable', 'string', 'max:255'],
             'no_hp' => ['nullable', 'string', 'max:255'],
             'nama_institusi' => ['sometimes', 'nullable', 'string', 'max:255'],
             'jenis_institusi' => ['sometimes', 'nullable', 'string', 'in:perguruan_tinggi,sekolah'],
             'program_studi' => ['sometimes', 'nullable', 'string', 'max:255'],
             'target_ipk' => ['nullable', 'numeric', 'between:0,4.00'],
-            'target_sks' => ['nullable', 'integer', 'between:1,200'],
+            'target_sks' => ['nullable', 'integer', 'between:0,200'],
             'foto_profil' => ['nullable', 'image', 'max:2048'],
             'hapus_foto_profil' => ['nullable', 'boolean'],
         ]);
@@ -69,9 +60,6 @@ class ProfileController extends Controller
         $userData = [];
         if (array_key_exists('name', $validated)) {
             $userData['name'] = $validated['name'];
-        }
-        if (array_key_exists('email', $validated)) {
-            $userData['email'] = $validated['email'];
         }
 
         $profileData = array_merge([
@@ -104,14 +92,18 @@ class ProfileController extends Controller
         DB::transaction(function () use ($user, $userData, $profileData) {
             if ($userData !== []) {
                 $user->fill($userData);
-                if (array_key_exists('email', $userData)) {
-                    $user->email_verified_at = null;
-                }
                 $user->save();
             }
 
             Profil::updateOrCreate(['user_id' => $user->id], $profileData);
         });
+
+        app(AuditLogService::class)->record(
+            $request,
+            'api_update_profile',
+            'Memperbarui profil via API: ' . $user->name,
+            $user->id,
+        );
 
         $profil = $user->fresh(['profil'])->profil;
 

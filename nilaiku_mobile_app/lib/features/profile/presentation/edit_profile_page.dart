@@ -181,8 +181,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       if (parsed == null) {
                         return 'Masukkan angka yang valid';
                       }
-                      if (parsed < 1 || parsed > 200) {
-                        return 'Target SKS harus antara 1 dan 200';
+                      if (parsed < 0 || parsed > 200) {
+                        return 'Target SKS harus antara 0 dan 200';
                       }
                       return null;
                     },

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GradingTemplate;
 use App\Models\GradingTemplateItem;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -126,6 +127,12 @@ class GradingTemplateController extends Controller
                 }
             }
 
+            app(AuditLogService::class)->record(
+                $request,
+                'update_grading_template_mahasiswa',
+                'Memperbarui template grading pribadi: ' . $template->nama_template,
+            );
+
             DB::commit();
             return redirect()->route('portal.grading')->with('success', 'Template berhasil diperbarui');
         } catch (\Exception $e) {
@@ -153,6 +160,12 @@ class GradingTemplateController extends Controller
         // delete items then template
         GradingTemplateItem::where('grading_template_id', $template->id)->delete();
         $template->delete();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'delete_grading_template_mahasiswa',
+            'Menghapus template grading pribadi: ' . $template->nama_template,
+        );
 
         return redirect()->back()->with('success', 'Template berhasil dihapus');
     }
@@ -209,6 +222,12 @@ class GradingTemplateController extends Controller
                 ]);
             }
 
+            app(AuditLogService::class)->record(
+                $request,
+                'create_grading_template_mahasiswa',
+                'Membuat template grading pribadi: ' . $request->input('nama_template'),
+            );
+
             DB::commit();
             return redirect()->route('portal.grading')->with('success', 'Template grading berhasil dibuat');
         } catch (\Exception $e) {
@@ -258,6 +277,12 @@ class GradingTemplateController extends Controller
                 'indeks' => $it['indeks'],
             ]);
         }
+
+        app(AuditLogService::class)->record(
+            $request,
+            'add_grading_template_item_mahasiswa',
+            'Menambah item grading ke template: ' . $template->nama_template,
+        );
 
         return redirect()->back()->with('success', 'Item grading berhasil ditambahkan ke template');
     }

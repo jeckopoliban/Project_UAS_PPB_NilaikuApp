@@ -83,7 +83,13 @@ class RekapitulasiController extends Controller
         foreach ($mataKuliahs as $mataKuliah) {
             $nilaiAkhir = $gradingService->hitungNilaiAkhir($mataKuliah->id, $userId);
             $komponenTotal = $mataKuliah->komponenNilais->sum('bobot_persen');
-            $isLengkap = abs($komponenTotal - 100) < 0.000001;
+            $adaNilaiKosong = $mataKuliah->komponenNilais->contains(function ($komponen) {
+                return $komponen->nilai_angka === null;
+            });
+            $isLengkap = $mataKuliah->komponenNilais->isNotEmpty()
+                && abs($komponenTotal - 100) < 0.000001
+                && ! $adaNilaiKosong
+                && $nilaiAkhir !== null;
 
             $row = [
                 'kode_mk' => sprintf('MK%07d', $mataKuliah->id),

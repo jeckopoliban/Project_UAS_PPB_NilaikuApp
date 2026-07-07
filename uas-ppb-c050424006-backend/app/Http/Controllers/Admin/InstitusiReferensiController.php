@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\InstitusiReferensi;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -39,6 +40,12 @@ class InstitusiReferensiController extends Controller
 
         InstitusiReferensi::create($data);
 
+        app(AuditLogService::class)->record(
+            $request,
+            'create_institusi_referensi',
+            'Menambahkan institusi referensi: ' . $data['nama_institusi'],
+        );
+
         return redirect()->route('admin.institusi-referensi.index')->with('success', 'Institusi berhasil ditambahkan');
     }
 
@@ -65,13 +72,26 @@ class InstitusiReferensiController extends Controller
         $item->fill($validator->validated());
         $item->save();
 
+        app(AuditLogService::class)->record(
+            $request,
+            'update_institusi_referensi',
+            'Memperbarui institusi referensi: ' . $item->nama_institusi,
+        );
+
         return redirect()->route('admin.institusi-referensi.index')->with('success', 'Institusi berhasil diperbarui');
     }
 
     public function destroy($id): RedirectResponse
     {
         $item = InstitusiReferensi::findOrFail($id);
+        $namaInstitusi = $item->nama_institusi;
         $item->delete();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'delete_institusi_referensi',
+            'Menghapus institusi referensi: ' . $namaInstitusi,
+        );
 
         return redirect()->route('admin.institusi-referensi.index')->with('success', 'Institusi berhasil dihapus');
     }

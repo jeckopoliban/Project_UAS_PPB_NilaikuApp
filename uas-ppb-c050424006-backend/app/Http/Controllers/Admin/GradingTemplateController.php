@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GradingTemplate;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -66,6 +67,12 @@ class GradingTemplateController extends Controller
             foreach ($data['items'] as $item) {
                 $template->items()->create($item);
             }
+
+            app(AuditLogService::class)->record(
+                request(),
+                'create_grading_template',
+                'Membuat template grading: ' . $data['nama_template'],
+            );
         });
 
         return redirect()->route('admin.grading-template.index')->with('success', 'Template grading berhasil dibuat');
@@ -144,6 +151,12 @@ class GradingTemplateController extends Controller
                     ]);
                 }
             }
+
+            app(AuditLogService::class)->record(
+                request(),
+                'update_grading_template',
+                'Memperbarui template grading: ' . $template->nama_template,
+            );
         });
 
         return redirect()->route('admin.grading-template.index')->with('success', 'Template grading berhasil diperbarui');
@@ -152,7 +165,14 @@ class GradingTemplateController extends Controller
     public function destroy($id): RedirectResponse
     {
         $template = GradingTemplate::whereNull('mahasiswa_id')->findOrFail($id);
+        $templateName = $template->nama_template;
         $template->delete();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'delete_grading_template',
+            'Menghapus template grading: ' . $templateName,
+        );
 
         return redirect()->route('admin.grading-template.index')->with('success', 'Template grading berhasil dihapus');
     }

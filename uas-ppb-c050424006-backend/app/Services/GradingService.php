@@ -80,6 +80,11 @@ class GradingService
             return null;
         }
 
+        // Nilai akhir hanya valid jika semua komponen sudah memiliki nilai.
+        if ($komponen->contains(fn ($item) => $item->nilai_angka === null)) {
+            return null;
+        }
+
         $nilaiAkhir = 0.0;
 
         foreach ($komponen as $item) {

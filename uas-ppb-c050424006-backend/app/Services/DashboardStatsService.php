@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 
 class DashboardStatsService
 {
-    public const SKS_TARGET = 144;
+    public const SKS_TARGET = 0;
     public const SEMESTER_TARGET = 8;
 
     public function getStats(int $userId): array
@@ -29,16 +29,16 @@ class DashboardStatsService
         $semesterAktif = $tahunAkademiks->firstWhere('status_aktif', true)?->nama;
 
         $ipTrend = $this->buildIpTrend($userId);
-        $ipSemesterTerakhir = end($ipTrend)['nilai_ip'] ?? null;
-        $ipkKumulatif = $this->hitungIpkKumulatif($userId);
+        $ipSemesterTerakhir = end($ipTrend)['nilai_ip'] ?? 0.0;
+        $ipkKumulatif = $this->hitungIpkKumulatif($userId) ?? 0.0;
         $sksLulus = $this->hitungSksLulus($userId);
-        $targetIpK = $user->profil->target_ipk ?? null;
-        $statusTargetTercapai = $targetIpK !== null && $ipkKumulatif !== null ? $ipkKumulatif >= $targetIpK : null;
+        $targetIpK = $user->profil?->target_ipk ?? 0.0;
+        $statusTargetTercapai = $targetIpK > 0 ? $ipkKumulatif >= $targetIpK : false;
 
         $reminders = $this->buildReminders($userId);
         $completion = $this->buildCompletion($user, $mataKuliahs, $komponenNilais, $tahunAkademiks);
 
-        $targetSks = $user->profil->target_sks ?? self::SKS_TARGET;
+        $targetSks = $user->profil?->target_sks ?? self::SKS_TARGET;
 
         return [
             'user' => $user,

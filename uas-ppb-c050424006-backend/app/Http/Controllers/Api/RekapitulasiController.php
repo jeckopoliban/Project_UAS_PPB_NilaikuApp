@@ -43,6 +43,7 @@ class RekapitulasiController extends Controller
 
         $mataKuliahs = MataKuliah::where('mahasiswa_id', $mahasiswaId)
             ->where('tahun_akademik_id', $tahunAkademikId)
+            ->with('komponenNilais')
             ->get();
 
         $service = app(GradingService::class);
@@ -51,6 +52,12 @@ class RekapitulasiController extends Controller
         foreach ($mataKuliahs as $mk) {
             $nilaiAkhir = $service->hitungNilaiAkhir($mk->id, $mahasiswaId);
             $grading = $nilaiAkhir !== null ? $service->convert($nilaiAkhir, $tahunAkademik->grading_template_id) : null;
+            $komponenTotal = (float) $mk->komponenNilais->sum('bobot_persen');
+            $adaNilaiKosong = $mk->komponenNilais->contains(fn ($komponen) => $komponen->nilai_angka === null);
+            $isLengkap = $mk->komponenNilais->isNotEmpty()
+                && abs($komponenTotal - 100) < 0.000001
+                && ! $adaNilaiKosong
+                && $nilaiAkhir !== null;
 
             $mataKuliahsData[] = [
                 'id' => $mk->id,
@@ -60,7 +67,7 @@ class RekapitulasiController extends Controller
                 'nilai_akhir' => $nilaiAkhir,
                 'huruf_mutu' => $grading['huruf_mutu'] ?? null,
                 'indeks' => $grading['indeks'] ?? null,
-                'status_lengkap' => $nilaiAkhir !== null ? 'Lengkap' : 'Belum Lengkap',
+                'status_lengkap' => $isLengkap ? 'Lengkap' : 'Belum Lengkap',
             ];
         }
 
@@ -168,7 +175,13 @@ class RekapitulasiController extends Controller
         foreach ($mataKuliahs as $mataKuliah) {
             $nilaiAkhir = $gradingService->hitungNilaiAkhir($mataKuliah->id, $userId);
             $komponenTotal = $mataKuliah->komponenNilais->sum('bobot_persen');
-            $isLengkap = abs($komponenTotal - 100) < 0.000001;
+            $adaNilaiKosong = $mataKuliah->komponenNilais->contains(function ($komponen) {
+                return $komponen->nilai_angka === null;
+            });
+            $isLengkap = $mataKuliah->komponenNilais->isNotEmpty()
+                && abs($komponenTotal - 100) < 0.000001
+                && ! $adaNilaiKosong
+                && $nilaiAkhir !== null;
 
             $row = [
                 'kode_mk' => sprintf('MK%07d', $mataKuliah->id),

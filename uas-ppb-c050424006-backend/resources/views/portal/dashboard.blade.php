@@ -5,7 +5,7 @@
 
 @section('content')
     @php
-        $progressWidth = isset($total_sks, $target_sks) ? min(100, round(($total_sks / $target_sks) * 100)) : 82;
+        $progressWidth = !empty($target_sks) ? min(100, round((($total_sks ?? 0) / $target_sks) * 100)) : 0;
         $chartLabels = isset($ip_trend) ? array_column($ip_trend, 'nama_semester') : ['S1', 'S2', 'S3', 'S4'];
         $chartData = isset($ip_trend) ? array_column($ip_trend, 'nilai_ip') : [3.42, 3.61, 3.75, 3.81];
     @endphp
@@ -29,7 +29,7 @@
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <p class="text-sm font-medium text-text-label">IPK</p>
-                        <p class="mt-3 text-3xl font-semibold text-text-heading">{{ isset($ipk_kumulatif) ? number_format($ipk_kumulatif,2) : '3.81' }}</p>
+                        <p class="mt-3 text-3xl font-semibold text-text-heading">{{ isset($ipk_kumulatif) ? number_format($ipk_kumulatif,2) : '0.00' }}</p>
                     </div>
                     <span class="inline-flex rounded-app-pill bg-brand-blue-light/15 px-3 py-1 text-xs font-semibold text-brand-blue">Statis</span>
                 </div>
@@ -37,19 +37,19 @@
             <div class="rounded-app-card border border-border-subtle bg-white p-6 shadow-app-soft">
                 <div>
                     <p class="text-sm font-medium text-text-label">Total SKS</p>
-                    <p class="mt-3 text-3xl font-semibold text-text-heading">{{ $total_sks ?? 124 }}</p>
+                        <p class="mt-3 text-3xl font-semibold text-text-heading">{{ $total_sks ?? 0 }}</p>
                 </div>
             </div>
             <div class="rounded-app-card border border-border-subtle bg-white p-6 shadow-app-soft">
                 <div>
                     <p class="text-sm font-medium text-text-label">Semester Aktif</p>
-                    <p class="mt-3 text-3xl font-semibold text-text-heading">{{ $total_semester ?? 0 }}</p>
+                        <p class="mt-3 text-3xl font-semibold text-text-heading">{{ $total_semester ?? 0 }}</p>
                 </div>
             </div>
             <div class="rounded-app-card border border-border-subtle bg-white p-6 shadow-app-soft">
                 <div>
                     <p class="text-sm font-medium text-text-label">Target IPK</p>
-                    <p class="mt-3 text-3xl font-semibold text-text-heading">{{ isset($target_ipk) ? number_format($target_ipk,2) : '3.80' }}</p>
+                        <p class="mt-3 text-3xl font-semibold text-text-heading">{{ isset($target_ipk) ? number_format($target_ipk,2) : '0.00' }}</p>
                     <p class="mt-2 text-sm text-brand-teal">Target akademik Anda</p>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <h3 class="text-sm font-medium text-text-label">Progress SKS</h3>
-                            <p class="mt-3 text-xl font-semibold text-text-heading">{{ $total_sks ?? 124 }} / {{ $target_sks ?? 144 }} SKS</p>
+                            <p class="mt-3 text-xl font-semibold text-text-heading">{{ $total_sks ?? 0 }} / {{ $target_sks ?? 0 }} SKS</p>
                         </div>
                         <span class="inline-flex rounded-app-pill bg-brand-blue-light/15 px-3 py-1 text-xs font-semibold text-brand-blue">{{ $progressWidth }}%</span>
                     </div>

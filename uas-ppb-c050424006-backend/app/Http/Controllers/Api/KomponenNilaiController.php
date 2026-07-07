@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KomponenNilai;
 use App\Models\MataKuliah;
+use App\Services\AuditLogService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -131,6 +132,13 @@ class KomponenNilaiController extends Controller
             'bobot_persen' => $request->input('bobot_persen'),
         ]);
 
+        app(AuditLogService::class)->record(
+            $request,
+            'api_create_komponen_nilai',
+            'Menambahkan komponen nilai via API: ' . $item->nama_komponen,
+            $userId,
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Komponen nilai berhasil dibuat',
@@ -200,6 +208,13 @@ class KomponenNilaiController extends Controller
         $item->fill($validator->validated());
         $item->save();
 
+        app(AuditLogService::class)->record(
+            $request,
+            'api_update_komponen_nilai',
+            'Memperbarui komponen nilai via API: ' . $item->nama_komponen,
+            $userId,
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Komponen nilai berhasil diperbarui',
@@ -222,6 +237,13 @@ class KomponenNilaiController extends Controller
             ], 404);
         }
         $item->delete();
+
+        app(AuditLogService::class)->record(
+            request(),
+            'api_delete_komponen_nilai',
+            'Menghapus komponen nilai via API: ' . $item->nama_komponen,
+            $userId,
+        );
 
         return response()->json([
             'success' => true,

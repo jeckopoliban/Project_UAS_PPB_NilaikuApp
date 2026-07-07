@@ -1,5 +1,9 @@
 class ApiEndpoints {
-  static const baseUrl = 'https://uas-ppb-c050424006-backend.test/api';
+  static const _defaultBaseUrl = 'https://uas-ppb-c050424006-backend.test/api';
+  static const baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: _defaultBaseUrl,
+  );
 
   static String get portalBaseUrl => baseUrl.replaceFirst('/api', '');
 

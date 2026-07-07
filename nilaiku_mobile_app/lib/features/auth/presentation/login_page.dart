@@ -19,6 +19,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   bool _passwordVisible = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -35,6 +36,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
+    if (_isSubmitting) return;
+
     final authNotifier = ref.read(authProvider.notifier);
     authNotifier.clearError();
 
@@ -55,9 +58,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
 
+    setState(() => _isSubmitting = true);
+
     final success = await ref
         .read(authProvider.notifier)
         .login(email: email, password: password);
+
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+    }
 
     if (!mounted) {
       return;
@@ -72,7 +81,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final authAsyncState = ref.watch(authProvider);
-    final isLoading = authAsyncState.isLoading;
+    final isLoading = _isSubmitting;
     final authError = authAsyncState.maybeWhen(
       data: (state) => state.error,
       orElse: () => null,

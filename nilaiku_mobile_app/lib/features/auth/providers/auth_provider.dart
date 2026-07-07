@@ -160,12 +160,15 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       return;
     }
 
+    // Flip auth state immediately so login screen is interactive without
+    // waiting for network/logout API completion.
+    state = AsyncValue.data(AuthState.initial());
+
     await _authRepository.logout();
     await _invalidateUserScopedProviders();
     if (kDebugMode) {
       print('AuthNotifier.logout finished and academic providers invalidated');
     }
-    state = AsyncValue.data(AuthState.initial());
   }
 
   Future<void> _invalidateUserScopedProviders() async {

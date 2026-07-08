@@ -89,6 +89,8 @@ class AuthRepository {
     required String email,
     required String password,
     required String passwordConfirmation,
+    required String namaInstitusi,
+    required String jenisInstitusi,
   }) async {
     try {
       final response = await _dioClient.post(
@@ -98,6 +100,8 @@ class AuthRepository {
           'email': email,
           'password': password,
           'password_confirmation': passwordConfirmation,
+          'nama_institusi': namaInstitusi,
+          'jenis_institusi': jenisInstitusi,
         },
       );
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../auth/providers/auth_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../data/profile_repository.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
@@ -53,6 +54,15 @@ class ProfileNotifier extends AsyncNotifier<Map<String, dynamic>> {
       );
       final updatedProfile = await _repository.getProfile();
       state = AsyncValue.data(updatedProfile);
+
+      await ref
+          .read(authProvider.notifier)
+          .updateUserInfo(
+            name: updatedProfile['name']?.toString(),
+            email: updatedProfile['email']?.toString(),
+            role: updatedProfile['role']?.toString(),
+          );
+      await ref.read(dashboardProvider.notifier).refresh();
       return true;
     } catch (error, stack) {
       state = AsyncValue.error(error, stack);

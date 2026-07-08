@@ -18,10 +18,12 @@ class RegisterPage extends ConsumerStatefulWidget {
 class _RegisterPageState extends ConsumerState<RegisterPage> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
+  late TextEditingController _namaInstitusiController;
   late TextEditingController _passwordController;
   late TextEditingController _passwordConfirmController;
   bool _passwordVisible = false;
   bool _passwordConfirmVisible = false;
+  String _jenisInstitusi = 'perguruan_tinggi';
   String? _errorMessage;
 
   @override
@@ -29,6 +31,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.initState();
     _nameController = TextEditingController();
     _emailController = TextEditingController();
+    _namaInstitusiController = TextEditingController();
     _passwordController = TextEditingController();
     _passwordConfirmController = TextEditingController();
   }
@@ -37,6 +40,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _namaInstitusiController.dispose();
     _passwordController.dispose();
     _passwordConfirmController.dispose();
     super.dispose();
@@ -47,11 +51,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final namaInstitusi = _namaInstitusiController.text.trim();
     final password = _passwordController.text.trim();
     final passwordConfirm = _passwordConfirmController.text.trim();
 
     if (name.isEmpty ||
         email.isEmpty ||
+        namaInstitusi.isEmpty ||
         password.isEmpty ||
         passwordConfirm.isEmpty) {
       setState(() => _errorMessage = 'Semua field harus diisi');
@@ -63,8 +69,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       return;
     }
 
-    if (password.length < 6) {
-      setState(() => _errorMessage = 'Password minimal 6 karakter');
+    if (password.length < 8) {
+      setState(() => _errorMessage = 'Password minimal 8 karakter');
       return;
     }
 
@@ -80,6 +86,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           email: email,
           password: password,
           passwordConfirmation: passwordConfirm,
+          namaInstitusi: namaInstitusi,
+          jenisInstitusi: _jenisInstitusi,
         );
 
     if (mounted) {
@@ -132,12 +140,45 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              controller: _namaInstitusiController,
+              enabled: !isLoading,
+              keyboardType: TextInputType.text,
+              decoration: const InputDecoration(
+                labelText: 'Nama Institusi',
+                hintText: 'Contoh: Universitas Lambung Mangkurat',
+                prefixIcon: Icon(Icons.school_outlined),
+              ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _jenisInstitusi,
+              decoration: const InputDecoration(
+                labelText: 'Jenis Institusi',
+                prefixIcon: Icon(Icons.account_balance_outlined),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: 'perguruan_tinggi',
+                  child: Text('Perguruan Tinggi'),
+                ),
+                DropdownMenuItem(value: 'sekolah', child: Text('Sekolah')),
+              ],
+              onChanged: isLoading
+                  ? null
+                  : (value) {
+                      if (value != null) {
+                        setState(() => _jenisInstitusi = value);
+                      }
+                    },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
               controller: _passwordController,
               enabled: !isLoading,
               obscureText: !_passwordVisible,
               decoration: InputDecoration(
                 labelText: 'Password',
-                hintText: 'Minimal 6 karakter',
+                hintText: 'Minimal 8 karakter',
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   onPressed: !isLoading

@@ -39,6 +39,25 @@
                             </div>
 
                             <div>
+                                <label for="nama_institusi" class="mb-2 block text-sm font-medium text-text-heading">Nama Institusi</label>
+                                <input id="nama_institusi" type="text" name="nama_institusi" value="{{ old('nama_institusi') }}" required autocomplete="organization" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-text-heading outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20" />
+                                @error('nama_institusi')
+                                    <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="jenis_institusi" class="mb-2 block text-sm font-medium text-text-heading">Jenis Institusi</label>
+                                <select id="jenis_institusi" name="jenis_institusi" required class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-text-heading outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
+                                    <option value="perguruan_tinggi" {{ old('jenis_institusi') === 'perguruan_tinggi' ? 'selected' : '' }}>Perguruan Tinggi</option>
+                                    <option value="sekolah" {{ old('jenis_institusi') === 'sekolah' ? 'selected' : '' }}>Sekolah</option>
+                                </select>
+                                @error('jenis_institusi')
+                                    <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
                                 <label for="password" class="mb-2 block text-sm font-medium text-text-heading">Password</label>
                                 <div class="relative">
                                     <input id="password" type="password" name="password" required autocomplete="new-password" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 pr-12 text-sm text-text-heading outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20" />

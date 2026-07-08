@@ -88,11 +88,42 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     return AuthState.initial();
   }
 
+  Future<void> updateUserInfo({
+    String? name,
+    String? email,
+    String? role,
+  }) async {
+    final current = state.maybeWhen(
+      data: (value) => value,
+      orElse: AuthState.initial,
+    );
+
+    state = AsyncValue.data(
+      current.copyWith(
+        userName: name ?? current.userName,
+        userEmail: email ?? current.userEmail,
+        userRole: role ?? current.userRole,
+      ),
+    );
+
+    if (name != null) {
+      await _secureStorage.saveUserName(name);
+    }
+    if (email != null) {
+      await _secureStorage.saveUserEmail(email);
+    }
+    if (role != null) {
+      await _secureStorage.saveUserRole(role);
+    }
+  }
+
   Future<bool> register({
     required String name,
     required String email,
     required String password,
     required String passwordConfirmation,
+    required String namaInstitusi,
+    required String jenisInstitusi,
   }) async {
     state = const AsyncValue.loading();
 
@@ -101,6 +132,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       email: email,
       password: password,
       passwordConfirmation: passwordConfirmation,
+      namaInstitusi: namaInstitusi,
+      jenisInstitusi: jenisInstitusi,
     );
 
     if (result['success'] == true) {

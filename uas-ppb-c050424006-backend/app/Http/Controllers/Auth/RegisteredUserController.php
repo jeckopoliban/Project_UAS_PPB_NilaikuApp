@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Profil;
 use App\Models\User;
 use App\Services\AuditLogService;
 use Illuminate\Auth\Events\Registered;
@@ -35,12 +36,20 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'nama_institusi' => ['required', 'string', 'max:255'],
+            'jenis_institusi' => ['required', 'string', 'in:perguruan_tinggi,sekolah'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+        ]);
+
+        Profil::create([
+            'user_id' => $user->id,
+            'nama_institusi' => $request->nama_institusi,
+            'jenis_institusi' => $request->jenis_institusi,
         ]);
 
         event(new Registered($user));

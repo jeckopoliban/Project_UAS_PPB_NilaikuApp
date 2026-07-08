@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Profil;
 use App\Models\User;
 use App\Services\AuditLogService;
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'nama_institusi' => ['required', 'string', 'max:255'],
+            'jenis_institusi' => ['required', 'string', 'in:perguruan_tinggi,sekolah'],
         ]);
 
         if ($validator->fails()) {
@@ -34,6 +37,12 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'user',
             'status_aktif' => true,
+        ]);
+
+        Profil::create([
+            'user_id' => $user->id,
+            'nama_institusi' => $request->nama_institusi,
+            'jenis_institusi' => $request->jenis_institusi,
         ]);
 
         app(AuditLogService::class)->record(

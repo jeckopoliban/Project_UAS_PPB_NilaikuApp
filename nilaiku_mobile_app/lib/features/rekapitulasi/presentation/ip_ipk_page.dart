@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/buttons.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../rekapitulasi/providers/rekapitulasi_provider.dart';
 
@@ -36,6 +37,8 @@ class _IpIpkPageState extends ConsumerState<IpIpkPage> {
   }
 
   Future<void> _saveTargetIpk(Map<String, dynamic> profil) async {
+    FocusScope.of(context).unfocus();
+
     final namaInstitusi = profil['nama_institusi']?.toString() ?? '';
     final jenisInstitusi = profil['jenis_institusi']?.toString() ?? '';
     final targetText = _targetIpkController.text.trim().replaceAll(',', '.');
@@ -45,6 +48,7 @@ class _IpIpkPageState extends ConsumerState<IpIpkPage> {
         targetIpk == null ||
         targetIpk < 0 ||
         targetIpk > 4) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Masukkan target IPK antara 0.00 dan 4.00.'),
@@ -54,42 +58,55 @@ class _IpIpkPageState extends ConsumerState<IpIpkPage> {
     }
 
     if (namaInstitusi.isEmpty || jenisInstitusi.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profil institusi belum lengkap.')),
       );
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isSaving = true;
     });
 
-    final success = await ref
-        .read(profileProvider.notifier)
-        .updateProfile(
-          namaInstitusi: namaInstitusi,
-          jenisInstitusi: jenisInstitusi,
-          targetIpk: targetIpk,
-        );
+    try {
+      final success = await ref
+          .read(profileProvider.notifier)
+          .updateProfile(
+            namaInstitusi: namaInstitusi,
+            jenisInstitusi: jenisInstitusi,
+            targetIpk: targetIpk,
+          );
 
-    setState(() {
-      _isSaving = false;
-    });
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+      });
 
-    if (success) {
-      await ref.read(profileProvider.notifier).refresh();
-      await ref.read(ipIpkProvider.notifier).refresh();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Target IPK berhasil disimpan.')),
-        );
+      if (success) {
+        await ref.read(profileProvider.notifier).refresh();
+        await ref.read(ipIpkProvider.notifier).refresh();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Target IPK berhasil disimpan.')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gagal menyimpan target IPK.')),
+          );
+        }
       }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal menyimpan target IPK.')),
-        );
-      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: $error')));
     }
   }
 
@@ -161,151 +178,176 @@ class _IpIpkPageState extends ConsumerState<IpIpkPage> {
 
     final breakdown = data['breakdown'] as List<dynamic>? ?? [];
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 320,
-                  child: _InfoCard(
-                    title: 'IP Sementara',
-                    content: Text(
-                      ipkString,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final cardWidth = screenWidth >= 900 ? (screenWidth - 24) / 3 : null;
+
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: cardWidth ?? double.infinity,
+                      child: _InfoCard(
+                        title: 'IP Sementara',
+                        content: Text(
+                          ipkString,
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle:
+                            'Indeks nilai sementara berdasarkan entri saat ini',
                       ),
                     ),
-                    subtitle:
-                        'Indeks nilai sementara berdasarkan entri saat ini',
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: SizedBox(
-                  height: 320,
-                  child: _InfoCard(
-                    title: 'Target IPK',
-                    content: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: _targetIpkController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: '3.70',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(16),
+                    SizedBox(
+                      width: cardWidth ?? double.infinity,
+                      child: _InfoCard(
+                        title: 'Target IPK',
+                        content: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: _targetIpkController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _saveTargetIpk(profil ?? {}),
+                              decoration: const InputDecoration(
+                                hintText: '3.70',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(16),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: GradientButton(
-                            onPressed: _isSaving
-                                ? null
-                                : () => _saveTargetIpk(profil ?? {}),
-                            child: _isSaving
-                                ? const SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text('Simpan Target'),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Target IPK saat ini: $targetIpkString',
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    subtitle: 'Tentukan target IPK Anda dan simpan perubahan',
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: SizedBox(
-                  height: 320,
-                  child: _InfoCard(
-                    title: 'Selisih Target',
-                    content: Text(
-                      differenceLabel,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: difference == null
-                            ? AppColors.textHeading
-                            : difference >= 0
-                            ? AppColors.successGreen
-                            : AppColors.rose,
-                      ),
-                    ),
-                    subtitle: 'Selisih dari target IPK',
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Breakdown per Semester',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView.separated(
-              itemCount: breakdown.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final semester = breakdown[index] as Map<String, dynamic>;
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          semester['nama_tahun']?.toString() ?? '-',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            _InfoChip(
-                              'SKS',
-                              semester['total_sks']?.toString() ?? '-',
+                            const SizedBox(height: 12),
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: _isSaving
+                                  ? null
+                                  : () => _saveTargetIpk(profil ?? {}),
+                              child: Container(
+                                width: double.infinity,
+                                height: 48,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.gradientButton,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: _isSaving
+                                    ? const SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Simpan Target',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                              ),
                             ),
-                            _InfoChip('IP', semester['ip']?.toString() ?? '-'),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Target IPK saat ini: $targetIpkString',
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           ],
                         ),
-                      ],
+                        subtitle:
+                            'Tentukan target IPK Anda dan simpan perubahan',
+                      ),
                     ),
+                    SizedBox(
+                      width: cardWidth ?? double.infinity,
+                      child: _InfoCard(
+                        title: 'Selisih Target',
+                        content: Text(
+                          differenceLabel,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: difference == null
+                                ? AppColors.textHeading
+                                : difference >= 0
+                                ? AppColors.successGreen
+                                : AppColors.rose,
+                          ),
+                        ),
+                        subtitle: 'Selisih dari target IPK',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Breakdown per Semester',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 260,
+                  child: ListView.separated(
+                    itemCount: breakdown.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final semester = breakdown[index] as Map<String, dynamic>;
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                semester['nama_tahun']?.toString() ?? '-',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  _InfoChip(
+                                    'SKS',
+                                    semester['total_sks']?.toString() ?? '-',
+                                  ),
+                                  _InfoChip(
+                                    'IP',
+                                    semester['ip']?.toString() ?? '-',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

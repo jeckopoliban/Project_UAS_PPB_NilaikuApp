@@ -123,19 +123,50 @@ class _InputNilaiPageState extends ConsumerState<InputNilaiPage> {
     });
   }
 
+  bool get _hasAnyInput {
+    if (namaKomponenPenilaianController.text.trim().isNotEmpty) {
+      return true;
+    }
+
+    return komponenControllers.any((item) {
+      final nama = item['nama']?.text.trim() ?? '';
+      final bobotText = item['bobot']?.text.trim() ?? '';
+      final nilaiText = item['nilai']?.text.trim() ?? '';
+      return nama.isNotEmpty || bobotText.isNotEmpty || nilaiText.isNotEmpty;
+    });
+  }
+
   bool get _isSaveEnabled {
-    return (_totalBobot - 100).abs() < 0.001 &&
-        namaKomponenPenilaianController.text.trim().isNotEmpty;
+    return _hasAnyInput;
+  }
+
+  bool get _isComplete {
+    if (!_hasAnyInput) return false;
+    if (_totalBobot < 100) return false;
+    return komponenControllers.every((item) {
+      final nama = item['nama']?.text.trim() ?? '';
+      final bobotText = item['bobot']?.text.trim() ?? '';
+      final bobot = double.tryParse(bobotText.replaceAll(',', '.'));
+      final nilaiText = item['nilai']?.text.trim() ?? '';
+      final nilai = double.tryParse(nilaiText.replaceAll(',', '.'));
+      return nama.isNotEmpty && bobot != null && bobot > 0 && nilai != null;
+    });
   }
 
   Color get _progressColor {
-    if (_isSaveEnabled) return AppColors.successGreen;
+    if (_isComplete) return AppColors.successGreen;
     if (_totalBobot > 100) return AppColors.rose;
     return AppColors.warningAmber;
   }
 
-  String get _progressLabel =>
-      'Total Bobot: ${_totalBobot.toStringAsFixed(_totalBobot.truncateToDouble() == _totalBobot ? 0 : 2)}% dari 100%';
+  String get _statusLabel => _isComplete ? 'Lengkap' : 'Belum Lengkap';
+
+  String get _progressLabel {
+    final totalBobot = _totalBobot.toStringAsFixed(
+      _totalBobot.truncateToDouble() == _totalBobot ? 0 : 2,
+    );
+    return 'Status: $_statusLabel • Total Bobot: $totalBobot%';
+  }
 
   InputDecoration _fieldDecoration(String hintText) {
     return InputDecoration(
@@ -201,6 +232,17 @@ class _InputNilaiPageState extends ConsumerState<InputNilaiPage> {
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: AppColors.textBody,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Status: $_statusLabel',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _isComplete
+                  ? AppColors.successGreen
+                  : AppColors.warningAmber,
             ),
           ),
         ],
@@ -325,16 +367,31 @@ class _InputNilaiPageState extends ConsumerState<InputNilaiPage> {
       return;
     }
 
-    final items = komponenControllers.map((controllerRow) {
-      return {
-        'nama_komponen': controllerRow['nama']?.text.trim() ?? '',
-        'bobot_persen':
-            double.tryParse(controllerRow['bobot']?.text.trim() ?? '') ?? 0,
-        'nilai_angka': controllerRow['nilai']?.text.trim().isEmpty == true
-            ? null
-            : double.tryParse(controllerRow['nilai']?.text.trim() ?? ''),
-      };
-    }).toList();
+    final items = komponenControllers
+        .where((controllerRow) {
+          final nama = controllerRow['nama']?.text.trim() ?? '';
+          final bobotText = controllerRow['bobot']?.text.trim() ?? '';
+          final nilaiText = controllerRow['nilai']?.text.trim() ?? '';
+          return nama.isNotEmpty ||
+              bobotText.isNotEmpty ||
+              nilaiText.isNotEmpty;
+        })
+        .map((controllerRow) {
+          final bobotText = controllerRow['bobot']?.text.trim() ?? '';
+          return {
+            'nama_komponen': controllerRow['nama']?.text.trim() ?? '',
+            'bobot_persen': bobotText.isEmpty
+                ? null
+                : double.tryParse(bobotText.replaceAll(',', '.')),
+            'nilai_angka': controllerRow['nilai']?.text.trim().isEmpty == true
+                ? null
+                : double.tryParse(
+                    controllerRow['nilai']?.text.trim().replaceAll(',', '.') ??
+                        '',
+                  ),
+          };
+        })
+        .toList();
 
     await ref
         .read(nilaiProvider.notifier)

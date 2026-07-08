@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/providers/auth_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../data/nilai_repository.dart';
 
 final nilaiRepositoryProvider = Provider<NilaiRepository>((ref) {
@@ -52,5 +53,6 @@ class NilaiNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
       komponen,
     );
     await load(mataKuliahId);
+    await ref.read(dashboardProvider.notifier).refresh();
   }
 }
